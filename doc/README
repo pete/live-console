@@ -1,0 +1,34 @@
+= LiveConsole
+
+== Installation
+
+You can install via rubygems,
+
+  gem install live_console
+
+or plain old setup.rb:
+
+  ruby setup.rb install
+
+== How to use LiveConsole
+
+LiveConsole is very easy to use in your own app.  It provides an IRB shell for 
+
+== Bugs
+
+LiveConsole lacks many of the niceties of IRB on the console, like Readline
+support.
+
+Using exit, EOF, or sending signals (like INT or STOP) don't work.  Just exit
+the program you used to connect to it.
+
+Other than that, LiveConsole doesn't have any known bugs, but it is alpha
+software, so they are likely to be there.
+
+== Credits
+
+Pete Elmore -- (pete.elmore(a)gmail.com)
+
+== Home page
+
+http://debu.gs/live-console
