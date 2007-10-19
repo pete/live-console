@@ -1,5 +1,23 @@
 = LiveConsole
 
+== Summary
+
+LiveConsole is a library for providing IRB over a TCP connection .  If you add
+it to your application, you can run arbitrary code against your application.
+For example, you can:
+	* Inspect the state of a running application
+	* Change the state of the application
+	* Patch code on the fly, without a restart.
+	* Let anyone on the net 0wn you if you bind to anything other than
+	  localhost.  :)
+It's useful as a diagnostic tool, a debugging tool, and a way to impress your friends or get those Lisp guys off your back.  You know the ones.  
+
+== Stern Security Warning.  Grrr.
+
+Have a look at the bugs section.  It should be pretty apparent that incorrect
+use of this library could create a large security hole, especially before
+authentication is implemented.
+
 == Installation
 
 You can install via rubygems,
@@ -12,18 +30,50 @@ or plain old setup.rb:
 
 == How to use LiveConsole
 
-LiveConsole is very easy to use in your own app.  It provides an IRB shell for 
+LiveConsole is very easy to use in your own app:
+
+	require 'rubygems'
+	require 'live_console'
+
+	lc = LiveConsole.new 1337	# Creates a LiveConsole on port 1337
+	# We're not yet listening on the port.  We need to start it up:
+	lc.run				# Starts the LiveConsole thread
+	# At this point, users can connect and get an IRB prompt.
+	lc.stop				# Kills the LiveConsole thread
+	# Now, no one can connect.
+
+Have a look at doc/lc_example.rb for a brief example of how to use LiveConsole.
+Try just running it:
+
+	$ ruby doc/lc_example.rb 4000 test
+	# Then, in a different shell:
+	$ netcat localhost 4000
+	irb(main):001:0> puts 'Wow, magic!'
+
+You can get creative about it, only starting LiveConsole when there's an
+unhandled exception in your server, and then calling LiveConsole#stop when
+you've diagnosed and fixed whatever the problem was.
 
 == Bugs
 
 LiveConsole lacks many of the niceties of IRB on the console, like Readline
 support.
 
-Using exit, EOF, or sending signals (like INT or STOP) don't work.  Just exit
-the program you used to connect to it.
+Typing exit, hitting ^D, or sending signals (like INT or STOP) doesn't work.
+Just exit the program you used to connect to it.
+
+There is no authentication support yet, although it is planned for the near
+future.  This creates a security risk:  anyone that can connect to the socket
+can run arbitrary Ruby code as the user who owns the process.  In fact, even
+binding to localhost can be a security issue if you're on a box with any
+untrusted users.  If there's a chance you don't know what you're doing, avoid
+using this library.
+
+The README contains a slur against Lisp guys.  Please stop hitting me with that PDP-10 manual.  I love your language and the lambda tattoo on your chest.  
 
 Other than that, LiveConsole doesn't have any known bugs, but it is alpha
-software, so they are likely to be there.
+software, so they are likely to be there.  Bug reports and patches gratefully
+accepted.
 
 == Credits
 
