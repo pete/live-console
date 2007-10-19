@@ -23,10 +23,10 @@ $x = ARGV[1]
 lc = LiveConsole.new port
 lc.run
 
-oldx = nil
+oldx = $x
 loop { 
 	if $x != oldx
-		puts "The time is now #{Time.now.strftime('%R:%S').",
+		puts "The time is now #{Time.now.strftime('%R:%S')}.",
 			"The value of $x changed from #{oldx.inspect} to #{$x.inspect}."
 		oldx = $x
 	end
