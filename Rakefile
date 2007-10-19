@@ -17,7 +17,7 @@ $exclude = %W(
 	--exclude='.*.tar.*z*'
 	--exclude=.svn
 	--exclude=.config
-	--exclude=Rakefile
+	--exclude=_darcs
 ).join(' ')
 
 task :default => :packages
@@ -25,14 +25,15 @@ task :default => :packages
 task(:packages) {
 	FileUtils.mkdir_p 'distrib'
 	system "ruby gemspec"
-	#system "mv #{$distname}.gem distrib"
+	system "mv #{$distname}.gem distrib"
 
-	#system "ln -sf . #{$distname}"
+	Dir.chdir 'distrib'
+	system "ln -sf .. #{$distname}"
+	system "tar czhf #{$tgz} #{$exclude} #{$distname}"
+	system "tar cjhf #{$tarbz2} #{$exclude} #{$distname}"
+	Dir.chdir '..'
 
-	#system "tar czhf distrib/#{$tgz} #{$distname} #{$exclude}"
-	#system "tar cjhf distrib/#{$tarbz2} #{$distname} #{$exclude}"
-
-	File.unlink "#{$distname}"
+	File.unlink "distrib/#{$distname}"
 }
 
 task(:install) {
