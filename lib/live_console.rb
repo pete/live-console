@@ -14,27 +14,20 @@ require 'socket'
 # fly.  There is currently no readline support.
 class LiveConsole
 	include Socket::Constants
-	autoload :IOMethods, 'live_console/io_methods'
 
-	attr_accessor :io_method, :io, :lc_thread
-	private :io_method=, :io=, :lc_thread=
+	attr_accessor :tcp_server, :lc_thread
+	private :tcp_server=, :lc_thread=
 	
 	# call-seq:
 	#	# Bind a LiveConsole to localhost:3030:
-	# 	LiveConsole.new :socket, :port => 3030
+	# 	LiveConsole.new 3030
 	#	# Accept connections from anywhere on port 3030.  Ridiculously insecure:
-	# 	LiveConsole.new(:socket, :port => 3030, :host => 'Your.IP.address')
+	# 	LiveConsole.new(3030, 'Your.IP.address')
 	#
 	# Creates a new LiveConsole.  You must next call LiveConsole#run when you
 	# want to spawn the thread to accept connections and run the console.
-	def initialize(io_method, opts = {})
-		self.io_method = io_method.to_sym
-		unless IOMethods::List.include?(self.io_method)
-			raise ArgumentError, "Unknown IO method: #{io_method}" 
-		end
-
-		self.io_method
-		init_io opts
+	def initialize(listen_port, listen_addr = '127.0.0.1')
+		self.tcp_server = TCPServer.new listen_addr, listen_port
 	end
 
 	# LiveConsole#run spawns a thread to listen for, accept, and provide an IRB
@@ -44,14 +37,18 @@ class LiveConsole
 		return false if lc_thread
 		self.lc_thread = Thread.new { 
 			loop {
-				Thread.pass
-				if io.start
-					irb_io = GenericIOMethod.new io.raw_input, io.raw_output
-					begin
-						IRB.start_with_io(irb_io)
-					rescue Errno::EPIPE => e
-						io.stop
-					end
+				socket = nil
+				begin
+					Thread.pass
+					socket = tcp_server.accept_nonblock
+					io = SocketIOMethod.new(socket)
+					IRB.start_with_io(io)
+				rescue Errno::EAGAIN, Errno::ECONNABORTED, Errno::EPROTO,
+					   Errno::EINTR
+					socket.close rescue nil
+					IO.select([tcp_server], [], [], 1)
+
+					retry
 				end
 			}
 		}
@@ -70,16 +67,10 @@ class LiveConsole
 		end
 	end
 
-	private
-
 	def init_irb
 		return if @@irb_inited_already
 		IRB.setup nil
 		@@irb_inited_already = true
-	end
-
-	def init_io opts
-		self.io = IOMethods.send(io_method).new opts
 	end
 end
 
@@ -111,7 +102,7 @@ module IRB
 				retry
 			end
 		}
-		irb.print "\n"
+		print "\n"
 	end
 
 	class Context
@@ -134,52 +125,32 @@ module IRB
 	end
 end
 
-# The GenericIOMethod is a class that wraps I/O for IRB.
-class GenericIOMethod < IRB::StdioInputMethod
-	# call-seq:
-	# 	GenericIOMethod.new io
-	# 	GenericIOMethod.new input, output
-	#
-	# Creates a GenericIOMethod, using either a single object for both input
-	# and output, or one object for input and another for output.
-	def initialize(input, output = nil)
-		@input, @output = input, output
+# The SocketIOMethod is a class that wraps I/O over a socket for IRB.
+class SocketIOMethod < IRB::StdioInputMethod
+	def initialize(socket)
+		@socket = socket
 		@line = []
 		@line_no = 0
 	end
 
-	attr_reader :input
-	def output
-		@output || input
-	end
-
 	def gets
-		output.print @prompt
-		output.flush
-		@line[@line_no += 1] = input.gets
-		# @io.flush	# Not sure this is needed.
+		@socket.print @prompt
+		@socket.flush
+		@line[@line_no += 1] = @socket.gets
+		@socket.flush
 		@line[@line_no]
 	end
 
-	# Returns the user input history.
-	def lines
-		@line.dup
-	end
+	# These just pass through to the socket.
+	%w(eof? close).each { |mname|
+		define_method(mname) { || @socket.send mname }
+	}
 
 	def print(*a)
-		output.print *a
+		@socket.print *a
 	end
 
 	def file_name
-		input.inspect
-	end
-
-	def eof?
-		input.eof?
-	end
-
-	def close
-		input.close
-		output.close if @output
+		@socket.inspect
 	end
 end

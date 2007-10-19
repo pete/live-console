@@ -5,6 +5,12 @@ require 'fileutils'
 
 require 'lib/live_console_config'
 
+def dinstall(dir, verbose = false)
+	['bin', 'lib'].each { |f|
+		install f, dir, verbose
+	}
+end
+
 $distname = "#{LiveConsoleConfig::PkgName}-#{LiveConsoleConfig::Version}"
 $tgz = "#{$distname}.tar.gz"
 $tarbz2 = "#{$distname}.tar.bz2"
@@ -13,11 +19,11 @@ $exclude = %W(
 	--exclude=#{$distname}/#{$distname}
 	--exclude=distrib
 	--exclude=tags
-	--exclude='.*.swp'
-	--exclude='.*.tar.*z*'
+	--exclude=rdoc
+	--exclude=.*.swp
 	--exclude=.svn
 	--exclude=.config
-	--exclude=_darcs
+	--exclude=Rakefile
 ).join(' ')
 
 task :default => :packages
@@ -27,23 +33,14 @@ task(:packages) {
 	system "ruby gemspec"
 	system "mv #{$distname}.gem distrib"
 
-	Dir.chdir 'distrib'
-	system "ln -sf .. #{$distname}"
-	system "tar czhf #{$tgz} #{$exclude} #{$distname}"
-	system "tar cjhf #{$tarbz2} #{$exclude} #{$distname}"
-	Dir.chdir '..'
+	system "ln -sf . #{$distname}"
 
-	File.unlink "distrib/#{$distname}"
+	system "tar czhf distrib/#{$tgz} #{$distname} #{$exclude}"
+	system "tar cjhf distrib/#{$tarbz2} #{$distname} #{$exclude}"
+
+	File.unlink "#{$distname}"
 }
 
-task(:install => :packages) {
-	system "gem install distrib/#{$gem}"
-}
-
-task(:clean) {
-	system "rm -rf distrib"
-}
-
-task(:doc) {
-	system "rdoc -N -S -U -o doc/rdoc -m doc/README -x _darcs -x setup.rb lib/* doc/*"
+task(:install) {
+	system "ruby setup.rb install"
 }

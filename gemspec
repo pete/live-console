@@ -17,7 +17,7 @@ SPEC = Gem::Specification.new { |s|
 	s.require_path 'lib'
 	s.autorequire = 'live_console'
 	s.has_rdoc = true
-	s.extra_rdoc_files = %w(doc/README doc/LICENSE doc/lc_example.rb)
+	s.extra_rdoc_files = %w(doc/README doc/LICENSE)
 }
 
 if __FILE__ == $0
