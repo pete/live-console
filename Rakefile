@@ -43,3 +43,7 @@ task(:install => :packages) {
 task(:clean) {
 	system "rm -rf distrib"
 }
+
+task(:doc) {
+	system "rdoc -N -S -U -o doc/rdoc -m doc/README -x _darcs -x setup.rb lib/* doc/*"
+}
