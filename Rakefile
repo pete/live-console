@@ -36,6 +36,10 @@ task(:packages) {
 	File.unlink "distrib/#{$distname}"
 }
 
-task(:install) {
-	system "ruby setup.rb install"
+task(:install => :packages) {
+	system "gem install distrib/#{$gem}"
+}
+
+task(:clean) {
+	system "rm -rf distrib"
 }
