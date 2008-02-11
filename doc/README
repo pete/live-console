@@ -36,7 +36,7 @@ LiveConsole is very easy to use in your own app:
 	require 'live_console'
 
 	lc = LiveConsole.new 1337	# Creates a LiveConsole on port 1337
-	# We're not yet listening on the port.  We need to start it up:
+	# We're not yet accepting connections.  We need to start it up:
 	lc.run				# Starts the LiveConsole thread
 	# At this point, users can connect and get an IRB prompt.
 	lc.stop				# Kills the LiveConsole thread
