@@ -54,6 +54,18 @@ You can get creative about it, only starting LiveConsole when there's an
 unhandled exception in your server, and then calling LiveConsole#stop when
 you've diagnosed and fixed whatever the problem was.
 
+Additionally, if you want to run LiveConsole on a server, but run netcat
+locally, you can use SSH port forwarding to avoid having to open LiveConsole
+to the world:  
+
+	ssh -L4000:localhost:4000 you@server
+
+Then, locally, you can do 
+
+	netcat localhost 4000
+
+and get the remote LiveConsole.  man ssh for more details.
+
 == Bugs
 
 LiveConsole lacks many of the niceties of IRB on the console, like Readline
