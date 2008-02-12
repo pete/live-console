@@ -29,11 +29,13 @@ class LiveConsole
 	#
 	# Creates a new LiveConsole.  You must next call LiveConsole#run when you
 	# want to spawn the thread to accept connections and run the console.
-	def initialize(io_method = :socket, opts = {})
-		unless IOMethods::List.include?(io_method.to_sym)
+	def initialize(io_method, opts = {})
+		self.io_method = io_method.to_sym
+		unless IOMethods::List.include?(self.io_method)
 			raise ArgumentError, "Unknown IO method: #{io_method}" 
 		end
 
+		self.io_method
 		init_io opts
 	end
 
@@ -44,15 +46,10 @@ class LiveConsole
 		return false if lc_thread
 		self.lc_thread = Thread.new { 
 			loop {
-				socket = nil
-				begin
-					Thread.pass
-					io.start
-					IRB.start_with_io(io.raw)
-				rescue Errno::EAGAIN, Errno::ECONNABORTED, Errno::EPROTO,
-					   Errno::EINTR
-					io.stop
-					retry
+				Thread.pass
+				if io.start
+					irb_io = GenericIOMethod.new io.raw
+					IRB.start_with_io(irb_io)
 				end
 			}
 		}
