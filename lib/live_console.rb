@@ -16,8 +16,6 @@ class LiveConsole
 	include Socket::Constants
 	autoload :IOMethods, 'live_console/io_methods'
 
-	NoIOMethodError = Class.new StandardError 
-
 	attr_accessor :io_method, :io, :lc_thread
 	private :io_method=, :io=, :lc_thread=
 	
@@ -49,7 +47,11 @@ class LiveConsole
 				Thread.pass
 				if io.start
 					irb_io = GenericIOMethod.new io.raw
-					IRB.start_with_io(irb_io)
+					begin
+						IRB.start_with_io(irb_io)
+					rescue Errno::EPIPE => e
+						io.stop
+					end
 				end
 			}
 		}
