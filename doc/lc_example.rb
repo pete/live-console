@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
+#require 'rubygems'
 require 'live_console'
 
 print <<-EOF
