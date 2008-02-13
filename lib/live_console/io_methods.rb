@@ -33,7 +33,7 @@ module LiveConsole::IOMethods
 
 		def self.included(other)
 			other.instance_eval {
-				readers = [:opts, :raw]
+				readers = [:opts, :raw_input, :raw_output]
 				attr_accessor *readers
 				private *readers.map { |r| (r.to_s + '=').to_sym }
 

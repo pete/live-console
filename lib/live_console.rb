@@ -46,7 +46,7 @@ class LiveConsole
 			loop {
 				Thread.pass
 				if io.start
-					irb_io = GenericIOMethod.new io.raw
+					irb_io = GenericIOMethod.new io.raw_input, io.raw_output
 					begin
 						IRB.start_with_io(irb_io)
 					rescue Errno::EPIPE => e
@@ -134,32 +134,52 @@ module IRB
 	end
 end
 
-# The SocketIOMethod is a class that wraps I/O over a socket for IRB.
+# The GenericIOMethod is a class that wraps I/O for IRB.
 class GenericIOMethod < IRB::StdioInputMethod
-	def initialize(io)
-		@io = io
+	# call-seq:
+	# 	GenericIOMethod.new io
+	# 	GenericIOMethod.new input, output
+	#
+	# Creates a GenericIOMethod, using either a single object for both input
+	# and output, or one object for input and another for output.
+	def initialize in, out = nil
+		@in, @out = in, out
 		@line = []
 		@line_no = 0
 	end
 
+	attr_reader :in
+	def out
+		@out || in
+	end
+
 	def gets
-		@io.print @prompt
-		@io.flush
-		@line[@line_no += 1] = @io.gets
-		@io.flush
+		out.print @prompt
+		out.flush
+		@line[@line_no += 1] = in.gets
+		# @io.flush	# Not sure this is needed.
 		@line[@line_no]
 	end
 
-	# These just pass through to the io.
-	%w(eof? close).each { |mname|
-		define_method(mname) { || @io.send mname }
-	}
+	# Returns the user input history.
+	def lines
+		@line.dup
+	end
 
 	def print(*a)
-		@io.print *a
+		out.print *a
 	end
 
 	def file_name
-		@io.inspect
+		in.inspect
+	end
+
+	def eof?
+		in.eof?
+	end
+
+	def close
+		in.close
+		out.close if @out
 	end
 end
