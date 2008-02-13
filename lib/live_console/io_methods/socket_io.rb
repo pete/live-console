@@ -5,11 +5,13 @@ class LiveConsole::IOMethods::SocketIO
 	}.freeze
 	RequiredOpts = DefaultOpts.keys + [:port]
 
+	include LiveConsole::IOMethods::IOMethod
+
 	def start
-		@server ||= TCPServer.new host, port
+		self.server ||= TCPServer.new host, port
 
 		begin
-			self.raw = @server.accept_nonblock
+			self.raw_input = self.raw_output = server.accept_nonblock
 			return true
 		rescue Errno::EAGAIN, Errno::ECONNABORTED, Errno::EPROTO,
 			   Errno::EINTR => e
@@ -19,9 +21,10 @@ class LiveConsole::IOMethods::SocketIO
 	end
 
 	def stop
-		IO.select [@server], [], [], 1 if @server
-		raw.close rescue nil
+		IO.select [server], [], [], 1 if server
+		raw_input.close rescue nil
 	end
 
-	include LiveConsole::IOMethods::IOMethod
+	private
+	attr_accessor :server
 end
