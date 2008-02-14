@@ -8,21 +8,25 @@ class LiveConsole::IOMethods::SocketIO
 	include LiveConsole::IOMethods::IOMethod
 
 	def start
-		self.server ||= TCPServer.new host, port
+		@server ||= TCPServer.new host, port
 
 		begin
 			self.raw_input = self.raw_output = server.accept_nonblock
 			return true
 		rescue Errno::EAGAIN, Errno::ECONNABORTED, Errno::EPROTO,
 			   Errno::EINTR => e
-			stop
+			select
 			retry
 		end
 	end
 
 	def stop
-		IO.select [server], [], [], 1 if server
+		select
 		raw_input.close rescue nil
+	end
+
+	def select
+		IO.select [server], [], [], 1 if server
 	end
 
 	private

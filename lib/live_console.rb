@@ -142,21 +142,21 @@ class GenericIOMethod < IRB::StdioInputMethod
 	#
 	# Creates a GenericIOMethod, using either a single object for both input
 	# and output, or one object for input and another for output.
-	def initialize in, out = nil
-		@in, @out = in, out
+	def initialize(input, output = nil)
+		@input, @output = input, output
 		@line = []
 		@line_no = 0
 	end
 
-	attr_reader :in
-	def out
-		@out || in
+	attr_reader :input
+	def output
+		@output || input
 	end
 
 	def gets
-		out.print @prompt
-		out.flush
-		@line[@line_no += 1] = in.gets
+		output.print @prompt
+		output.flush
+		@line[@line_no += 1] = input.gets
 		# @io.flush	# Not sure this is needed.
 		@line[@line_no]
 	end
@@ -167,19 +167,19 @@ class GenericIOMethod < IRB::StdioInputMethod
 	end
 
 	def print(*a)
-		out.print *a
+		output.print *a
 	end
 
 	def file_name
-		in.inspect
+		input.inspect
 	end
 
 	def eof?
-		in.eof?
+		input.eof?
 	end
 
 	def close
-		in.close
-		out.close if @out
+		input.close
+		output.close if @output
 	end
 end
