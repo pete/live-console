@@ -1,7 +1,6 @@
 class LiveConsole::IOMethods::SocketIO
-
 	DefaultOpts = {
-		:host => '127.0.0.1'
+		:host => '127.0.0.1',
 	}.freeze
 	RequiredOpts = DefaultOpts.keys + [:port]
 
