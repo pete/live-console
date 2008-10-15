@@ -5,6 +5,7 @@
 
 require 'irb'
 require 'socket'
+require 'live_console_config'
 
 # LiveConsole provides a socket that can be connected to via netcat or telnet
 # to use to connect to an IRB session inside a running process.  It creates a
@@ -16,14 +17,17 @@ class LiveConsole
 	include Socket::Constants
 	autoload :IOMethods, 'live_console/io_methods'
 
-	attr_accessor :io_method, :io, :lc_thread
-	private :io_method=, :io=, :lc_thread=
+	attr_accessor :io_method, :io, :thread
+	private :io_method=, :io=, :thread=
 	
 	# call-seq:
 	#	# Bind a LiveConsole to localhost:3030:
 	# 	LiveConsole.new :socket, :port => 3030
 	#	# Accept connections from anywhere on port 3030.  Ridiculously insecure:
-	# 	LiveConsole.new(:socket, :port => 3030, :host => 'Your.IP.address')
+	# 	LiveConsole.new(:socket, :port => 3030, :host => '0.0.0.0')
+	#	# More secure:
+	#	LiveConsole.new(:unix_socket, :path => '/tmp/my_liveconsole.sock',
+	#	                :mode => 0600)
 	#
 	# Creates a new LiveConsole.  You must next call LiveConsole#run when you
 	# want to spawn the thread to accept connections and run the console.
@@ -33,7 +37,6 @@ class LiveConsole
 			raise ArgumentError, "Unknown IO method: #{io_method}" 
 		end
 
-		self.io_method
 		init_io opts
 	end
 
@@ -41,8 +44,8 @@ class LiveConsole
 	# console to new connections.  If a thread is already running, this method
 	# simply returns false; otherwise, it returns the new thread.
 	def run
-		return false if lc_thread
-		self.lc_thread = Thread.new { 
+		return false if thread
+		self.thread = Thread.new { 
 			loop {
 				Thread.pass
 				if io.start
@@ -55,15 +58,15 @@ class LiveConsole
 				end
 			}
 		}
-		lc_thread
+		thread
 	end
 
 	# Ends the running thread, if it exists.  Returns true if a thread was
 	# running, false otherwise.
 	def stop
-		if lc_thread
-			lc_thread.exit
-			self.lc_thread = nil
+		if thread
+			thread.exit
+			self.thread = nil
 			true
 		else
 			false

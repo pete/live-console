@@ -42,5 +42,12 @@ module LiveConsole::IOMethods
 				}
 			}
 		end
+
+		def select
+			IO.select [server], [], [], 1 if server
+		end
+
+		private
+		attr_accessor :server
 	end
 end

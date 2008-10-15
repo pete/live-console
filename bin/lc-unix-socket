@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+# This is the client for the unix-socket version of LiveConsole.  It just talks
+# to the Unix socket, and there may already be a tool for this.  I don't know,
+# I just work here.
+
+require 'socket'
+
+socket_path = ARGV.first
+if socket_path.nil?
+	$stderr.puts "You must supply a path to the socket you want to connect to."
+	exit 1
+end
+
+client = UNIXSocket.new socket_path
+
+$stdin.sync = $stdout.sync = client.sync = true
+
+read_thread =
+	Thread.new {
+		loop {
+			begin
+				Thread.pass
+				$stdout.write client.read_nonblock(1)
+			rescue Errno::EAGAIN, Errno::EINTR => e
+				IO.select [client], [], [], 1
+			rescue Errno::EOFError, Errno::EPIPE => e
+				$stderr.puts e.inspect
+			rescue Exception => e
+				$stderr.puts e.inspect
+			end
+		}
+	}
+
+st = Thread.new {
+	loop {
+		puts [
+			client.closed_read?, 
+			client.closed_write?,
+		].inspect
+		sleep 0.1
+	}
+}
+
+<<-EOSHIT
+while(l = $stdin.gets)
+	begin
+		client.print l if IO.select [], [client], [], 1
+	rescue Errno::EPIPE => e
+		puts "Other end closed."
+		break
+	end
+end
+EOSHIT
+
+Thread.new {
+	loop {
+		begin 
+			l = $stdin.read_nonblock(1)
+		rescue Errno::EAGAIN
+			retry
+		end
+
+		begin
+			client.print l if IO.select [], [client], [], 1
+		rescue Errno::EPIPE => e
+			puts "Other end closed."
+			break
+		end
+	}
+}
+
+loop {
+	sleep 1
+}
+
+(Thread.list - [Thread.current]).map { |t| t.kill ; t.join }

@@ -24,10 +24,4 @@ class LiveConsole::IOMethods::SocketIO
 		raw_input.close rescue nil
 	end
 
-	def select
-		IO.select [server], [], [], 1 if server
-	end
-
-	private
-	attr_accessor :server
 end
