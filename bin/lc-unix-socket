@@ -21,7 +21,7 @@ read_thread =
 		loop {
 			begin
 				Thread.pass
-				$stdout.write client.read_nonblock(1)
+				$stdout.write client.read_nonblock(1024)
 			rescue Errno::EAGAIN, Errno::EINTR => e
 				IO.select [client], [], [], 1
 			rescue Errno::EOFError, Errno::EPIPE => e
@@ -31,16 +31,6 @@ read_thread =
 			end
 		}
 	}
-
-st = Thread.new {
-	loop {
-		puts [
-			client.closed_read?, 
-			client.closed_write?,
-		].inspect
-		sleep 0.1
-	}
-}
 
 <<-EOSHIT
 while(l = $stdin.gets)
@@ -56,7 +46,7 @@ EOSHIT
 Thread.new {
 	loop {
 		begin 
-			l = $stdin.read_nonblock(1)
+			l = $stdin.read_nonblock(1024)
 		rescue Errno::EAGAIN
 			retry
 		end
@@ -70,8 +60,4 @@ Thread.new {
 	}
 }
 
-loop {
-	sleep 1
-}
-
-(Thread.list - [Thread.current]).map { |t| t.kill ; t.join }
+loop { sleep 1 }
