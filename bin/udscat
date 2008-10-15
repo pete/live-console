@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-# This is the client for the unix-socket version of LiveConsole.  It just talks
-# to the Unix socket, and there may already be a tool for this.  I don't know,
-# I just work here.
+# This is a client for the unix domain socket version of LiveConsole.  It just
+# talks to the socket.  It has been included so that you don't have to track
+# down a version of netcat that does this.
 
 require 'socket'
 
@@ -25,23 +25,10 @@ read_thread =
 			rescue Errno::EAGAIN, Errno::EINTR => e
 				IO.select [client], [], [], 1
 			rescue Errno::EOFError, Errno::EPIPE => e
-				$stderr.puts e.inspect
-			rescue Exception => e
-				$stderr.puts e.inspect
+				# nothing
 			end
 		}
 	}
-
-<<-EOSHIT
-while(l = $stdin.gets)
-	begin
-		client.print l if IO.select [], [client], [], 1
-	rescue Errno::EPIPE => e
-		puts "Other end closed."
-		break
-	end
-end
-EOSHIT
 
 Thread.new {
 	loop {
@@ -54,10 +41,11 @@ Thread.new {
 		begin
 			client.print l if IO.select [], [client], [], 1
 		rescue Errno::EPIPE => e
-			puts "Other end closed."
-			break
+			$stderr.puts "Other end closed."
+			exit 0
 		end
 	}
 }
 
+trap('INT') { exit 0 }
 loop { sleep 1 }
