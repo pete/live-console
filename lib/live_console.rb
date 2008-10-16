@@ -9,10 +9,10 @@ require 'live_console_config'
 
 # LiveConsole provides a socket that can be connected to via netcat or telnet
 # to use to connect to an IRB session inside a running process.  It creates a
-# thread that listens on the specified address/port, and presents connecting
-# clients with an IRB shell.  Using this, you can execute code on a running
-# instance of a Ruby process to inspect the state or even patch code on the
-# fly.  There is currently no readline support.
+# thread that listens on the specified address/port or Unix Domain Socket path,
+# and presents connecting clients with an IRB shell.  Using this, you can
+# execute code on a running instance of a Ruby process to inspect the state or
+# even patch code on the fly.  There is currently no readline support.
 class LiveConsole
 	include Socket::Constants
 	autoload :IOMethods, 'live_console/io_methods'
@@ -21,16 +21,17 @@ class LiveConsole
 	private :io_method=, :io=, :thread=
 	
 	# call-seq:
-	#	# Bind a LiveConsole to localhost:3030:
-	# 	LiveConsole.new :socket, :port => 3030
+	#	# Bind a LiveConsole to localhost:3030 (only allow clients on this 
+	#	# machine to connect):
+	#	LiveConsole.new :socket, :port => 3030
 	#	# Accept connections from anywhere on port 3030.  Ridiculously insecure:
-	# 	LiveConsole.new(:socket, :port => 3030, :host => '0.0.0.0')
-	#	# More secure:
+	#	LiveConsole.new(:socket, :port => 3030, :host => '0.0.0.0')
+	#	# Use a Unix Domain Socket (which is more secure) instead:
 	#	LiveConsole.new(:unix_socket, :path => '/tmp/my_liveconsole.sock',
 	#	                :mode => 0600)
 	#
-	# Creates a new LiveConsole.  You must next call LiveConsole#run when you
-	# want to spawn the thread to accept connections and run the console.
+	# Creates a new LiveConsole.  You must next call LiveConsole#start when you
+	# want to spawn the thread to accept connections and start the console.
 	def initialize(io_method, opts = {})
 		self.io_method = io_method.to_sym
 		unless IOMethods::List.include?(self.io_method)
@@ -40,10 +41,10 @@ class LiveConsole
 		init_io opts
 	end
 
-	# LiveConsole#run spawns a thread to listen for, accept, and provide an IRB
-	# console to new connections.  If a thread is already running, this method
-	# simply returns false; otherwise, it returns the new thread.
-	def run
+	# LiveConsole#start spawns a thread to listen for, accept, and provide an
+	# IRB console to new connections.  If a thread is already running, this
+	# method simply returns false; otherwise, it returns the new thread.
+	def start
 		return false if thread
 		self.thread = Thread.new { 
 			loop {
