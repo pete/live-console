@@ -51,7 +51,15 @@ class LiveConsole
 	# IRB console to new connections.  If a thread is already running, this
 	# method simply returns false; otherwise, it returns the new thread.
 	def start
-		return false if thread
+		if thread 
+			if thread.alive?
+				return false
+			else
+				thread.join
+				self.thread = nil
+			end
+		end
+
 		self.thread = Thread.new { 
 			loop {
 				Thread.pass
@@ -72,7 +80,15 @@ class LiveConsole
 	# running, false otherwise.
 	def stop
 		if thread
+			if thread == Thread.current
+				self.thread = nil
+				Thread.current.exit!
+			end
+
 			thread.exit
+			if thread.join(0.1).nil?
+				thread.exit!
+			end
 			self.thread = nil
 			true
 		else
@@ -83,8 +99,12 @@ class LiveConsole
 	# Restarts.  Useful for binding changes.  Return value is the same as for 
 	# LiveConsole#start.
 	def restart
-		stop
-		start
+		r = lambda { stop; start }
+		if thread == Thread.current
+			Thread.new &r # Leaks a thread, but works.
+		else
+			r.call
+		end
 	end
 
 	private
