@@ -21,7 +21,7 @@ port = ARGV.first.to_i
 port = port.zero? ? 3333 : port
 $x = ARGV[1]
 
-lc = LiveConsole.new :socket, :port => port
+lc = LiveConsole.new :socket, :port => port, :bind => binding
 lc.start
 
 puts "My PID is #{Process.pid}, " \

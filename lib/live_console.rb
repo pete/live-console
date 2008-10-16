@@ -17,7 +17,7 @@ class LiveConsole
 	include Socket::Constants
 	autoload :IOMethods, 'live_console/io_methods'
 
-	attr_accessor :io_method, :io, :thread
+	attr_accessor :io_method, :io, :thread, :bind
 	private :io_method=, :io=, :thread=
 	
 	# call-seq:
@@ -28,12 +28,18 @@ class LiveConsole
 	#	LiveConsole.new(:socket, :port => 3030, :host => '0.0.0.0')
 	#	# Use a Unix Domain Socket (which is more secure) instead:
 	#	LiveConsole.new(:unix_socket, :path => '/tmp/my_liveconsole.sock',
-	#	                :mode => 0600)
+	#	                :mode => 0600, :uid => Process.uid, :gid => Process.gid)
+	#	# By default, the mode is 0600, and the uid and gid are those of the 
+	#	# current process.  These three options are for the file's permissions.
+	#	# You can also supply a binding for IRB's toplevel:
+	#	LiveConsole.new(:unix_socket, 
+	#		:path => "/tmp/live_console_#{Process.pid}.sock", :bind => binding)
 	#
 	# Creates a new LiveConsole.  You must next call LiveConsole#start when you
 	# want to spawn the thread to accept connections and start the console.
 	def initialize(io_method, opts = {})
 		self.io_method = io_method.to_sym
+		self.bind = opts.delete :bind
 		unless IOMethods::List.include?(self.io_method)
 			raise ArgumentError, "Unknown IO method: #{io_method}" 
 		end
@@ -52,7 +58,7 @@ class LiveConsole
 				if io.start
 					irb_io = GenericIOMethod.new io.raw_input, io.raw_output
 					begin
-						IRB.start_with_io(irb_io)
+						IRB.start_with_io(irb_io, bind)
 					rescue Errno::EPIPE => e
 						io.stop
 					end
@@ -93,7 +99,7 @@ module IRB
 	@inited = false
 
 	# Overridden a la FXIrb to accomodate our needs.
-	def IRB.start_with_io(io, &block)
+	def IRB.start_with_io(io, bind, &block)
 		unless @inited
 			setup '/dev/null'
 			IRB.parse_opts
@@ -101,7 +107,9 @@ module IRB
 			@inited = true
 		end
 
-		irb = Irb.new(nil, io, io)
+		bind ||= IRB::Frame.top(1)
+		ws = IRB::WorkSpace.new(bind)
+		irb = Irb.new(ws, io, io)
 
 		@CONF[:IRB_RC].call(irb.context) if @CONF[:IRB_RC]
 		@CONF[:MAIN_CONTEXT] = irb.context
