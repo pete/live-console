@@ -20,8 +20,8 @@ path = ARGV.first
 path = path.nil? ? default_path : path
 $x = ARGV[1]
 
-lc = LiveConsole.new :unix_socket, :path => path
-lc.run
+lc = LiveConsole.new :unix_socket, :path => path, :bind => binding
+lc.start
 
 puts "My PID is #{Process.pid}, " \
 	"I'm running on #{path}, and $x = #{$x.inspect}"

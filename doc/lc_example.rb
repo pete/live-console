@@ -22,7 +22,7 @@ port = port.zero? ? 3333 : port
 $x = ARGV[1]
 
 lc = LiveConsole.new :socket, :port => port
-lc.run
+lc.start
 
 puts "My PID is #{Process.pid}, " \
 	"I'm running on port #{port}, and $x = #{$x.inspect}"
