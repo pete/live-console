@@ -7,6 +7,7 @@ SPEC = Gem::Specification.new { |s|
 	s.author = 	LiveConsoleConfig::Authors
 	s.email = 	LiveConsoleConfig::Email
 	s.homepage =	LiveConsoleConfig::URL
+	s.rubyforge_project = LiveConsoleConfig::Project
 	s.platform =	Gem::Platform::RUBY
 	s.summary =	
 	    'A library to support adding a console to your running application.'
@@ -15,13 +16,11 @@ SPEC = Gem::Specification.new { |s|
 		].find { |rx| rx.match file }
 	}
 	s.require_path 'lib'
-	s.autorequire = 'live_console'
 	s.has_rdoc = true
 	s.extra_rdoc_files = Dir['doc/*'].select(&File.method(:file?))
 	Dir['bin/*'].map(&File.method(:basename)).map(&s.executables.method(:<<))
 }
 
 if __FILE__ == $0
-	Gem::manage_gems
 	Gem::Builder.new(SPEC).build
 end
