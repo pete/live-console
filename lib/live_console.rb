@@ -80,6 +80,13 @@ class LiveConsole
 		end
 	end
 
+	# Restarts.  Useful for binding changes.  Return value is the same as for 
+	# LiveConsole#start.
+	def restart
+		stop
+		start
+	end
+
 	private
 
 	def init_irb

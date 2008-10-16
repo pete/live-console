@@ -39,9 +39,9 @@ LiveConsole is very easy to use in your own app:
 	# Create a LiveConsole using TCP on port 1337
 	lc = LiveConsole.new :socket, :port => 1337
 	# We're not yet accepting connections.  We need to start it up:
-	lc.start			# Starts the LiveConsole thread
+	lc.start            # Starts the LiveConsole thread
 	# At this point, users can connect and get an IRB prompt.
-	lc.stop				# Kills the LiveConsole thread
+	lc.stop             # Kills the LiveConsole thread
 	# Now, no one can connect.
 
 	# Create a LiveConsole using a Unix socket in /tmp/live-console.sock
@@ -51,8 +51,13 @@ LiveConsole is very easy to use in your own app:
 	lc.stop
 
 	# Have a LiveConsole run code in a binding other than the top-level:
-	lc.bind = binding
+	lc = LiveConsole.new :unix_socket, :path => '/tmp/live-console.sock'
+	                     :bind => binding
 	lc.start
+	# That will start IRB in the current binding.  There is also an accessor:
+	lc.bind = binding
+	# Of course, you must restart before IRB will see the new binding:
+	lc.restart
 
 Have a look at doc/lc_example.rb or doc/lc_unix_example.rb for brief examples
 of how to use LiveConsole.
@@ -83,7 +88,8 @@ Then, locally, you can do
 
 	netcat localhost 4000
 
-and get the remote LiveConsole.  man ssh for more details.
+and get the remote LiveConsole.  man ssh for more details.  Of course, this
+only works for the TCP socket mode.
 
 == Bugs
 
