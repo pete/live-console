@@ -15,10 +15,11 @@ SPEC = Gem::Specification.new { |s|
 		[ /\/rdoc\//i,     # No rdoc
 		].find { |rx| rx.match file }
 	}
+	Dir['bin/*'].map(&File.method(:basename)
+		).map(&s.executables.method(:<<))
 	s.require_path 'lib'
 	s.has_rdoc = true
 	s.extra_rdoc_files = Dir['doc/*'].select(&File.method(:file?))
-	Dir['bin/*'].map(&File.method(:basename)).map(&s.executables.method(:<<))
 }
 
 if __FILE__ == $0
