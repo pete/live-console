@@ -125,6 +125,8 @@ end
 module IRB
 	@inited = false
 
+	ARGV = []
+
 	# Overridden a la FXIrb to accomodate our needs.
 	def IRB.start_with_io(io, bind, &block)
 		unless @inited
