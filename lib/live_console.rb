@@ -4,6 +4,7 @@
 # See doc/LICENSE.
 
 require 'irb'
+require 'irb/frame'
 require 'socket'
 require 'live_console_config'
 
