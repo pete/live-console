@@ -1,6 +1,7 @@
 require 'rake/gempackagetask'
 require 'rake/rdoctask'
 require 'lib/live_console_config'
+require 'fileutils'
 
 $: << "#{File.dirname(__FILE__)}/lib"
 
@@ -50,6 +51,12 @@ desc "Runs IRB, automatically require()ing #{spec.name}."
 task(:irb) {
 	exec "irb -Ilib -r#{spec.name}"
 }
+
+desc "Cleans up the pkg directory."
+task(:clean) {
+	FileUtils.rm_rf 'pkg'
+}
+
 
 desc "Generates a static gemspec file; useful for github."
 task(:static_gemspec) {
