@@ -10,7 +10,7 @@ class LiveConsole::IOMethods::SocketIO
 		@server ||= TCPServer.new host, port
 
 		begin
-			self.raw_input = self.raw_output = server.accept_nonblock
+			self.raw_input = self.raw_output = server.accept
 			return true
 		rescue Errno::EAGAIN, Errno::ECONNABORTED, Errno::EPROTO,
 			   Errno::EINTR => e

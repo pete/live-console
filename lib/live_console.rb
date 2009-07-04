@@ -137,9 +137,9 @@ module IRB
 			@inited = true
 		end
 
-		bind ||= IRB::Frame.top(1)
 		ws = IRB::WorkSpace.new(bind)
 		irb = Irb.new(ws, io, io)
+		bind ||= IRB::Frame.top(1) rescue TOPLEVEL_BINDING
 
 		@CONF[:IRB_RC].call(irb.context) if @CONF[:IRB_RC]
 		@CONF[:MAIN_CONTEXT] = irb.context
