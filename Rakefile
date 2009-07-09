@@ -57,7 +57,6 @@ task(:clean) {
 	FileUtils.rm_rf 'pkg'
 }
 
-
 desc "Generates a static gemspec file; useful for github."
 task(:static_gemspec) {
 	# This whole thing is hacky.
@@ -84,7 +83,7 @@ spec = Gem::Specification.new { |s|
 if __FILE__ == $0
 	Gem::Builder.new(spec).build 
 else
-	spec
+	spec # Github wants this file to return the spec.
 end
 		EOGEMSPEC
 	}
