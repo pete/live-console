@@ -94,7 +94,14 @@ only works for the TCP socket mode.
 == Bugs
 
 LiveConsole lacks many of the niceties of IRB on the console, like Readline
-support.
+support.  For this, you can actually use the wonderful rlwrap program, which
+wraps an arbitrary interactive program in readline.  For example, to connect to
+a LiveConsole on localhost:3333, use
+	rlwrap netcat localhost 3333
+rlwrap is available with most Linux distributions or at
+http://utopia.knoware.nl/~hlub/uck/rlwrap/ .  It is seriously an incredibly
+useful piece of software.
+	
 
 Typing exit, hitting ^D, or sending signals (like INT or STOP) doesn't work.
 Just exit the program you used to connect to it.  This has more to do with the
@@ -120,7 +127,10 @@ reports and patches gratefully accepted.
 
 == Credits
 
-Pete Elmore -- (pete.elmore(a)gmail.com)
+Pete Elmore, author -- (pete.elmore(a)gmail.com)
+
+Roger D. Pack (http://betterlogic.com/roger/) provided patches and Windows
+support 
 
 == Home page
 
