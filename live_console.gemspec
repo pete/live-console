@@ -15,10 +15,10 @@ spec = Gem::Specification.new { |s|
 	s.name = "live_console"
 	s.summary = "A library to support adding an irb console to your running application."
 	s.homepage = "http://debu.gs/live-console"
-	s.version = "0.2.1"
+	s.version = "0.2.3"
 }
 if __FILE__ == $0
 	Gem::Builder.new(spec).build 
 else
-	spec
+	spec # Github wants this file to return the spec.
 end
