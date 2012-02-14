@@ -1,0 +1,14 @@
+Hi!  The old README, as with the other docs, is in doc/.  GitHub hates this,
+though.
+
+But what I'm here to talk about is that Jennifer Hickey has agreed to take over
+the maintenance of LiveConsole.  Her fork, now the canonical repo, is here:
+https://github.com/jencompgeek/live-console
+
+She'll be doing the future releases to RubyGems.org and that is pretty awesome
+of her.  Thanks, Jen!
+
+Also a special thanks to Roger D. Pack, who has helped out with some bug fixes.
+He's here:  https://github.com/rdp/
+
+I'm grateful LiveConsole has been shown this much love!  Thanks, everyone!
